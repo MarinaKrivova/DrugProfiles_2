@@ -89,25 +89,28 @@ def ShowSpecific(df, drug_CCL_list, x_columns, y_columns,
             ax.axhline(lower_limit, color='black',ls='--')
             
             
-def CutOffOutliers_2(df, response_columns, middle_points_limit= -0.2):
+def FindHighResponses(df, response_cols):
     df = df.copy()
-    cols= []
-    for j in range(1, len(response_columns)-1): # two first and two last are already assessed
-        df["delta_"+str(j)] = df[response_columns[j]] - df[response_columns[j+1]]
-        cols.append("delta_"+str(j))
-    df["check_delta"] = df[cols].apply(lambda row: sum(row<middle_points_limit), axis=1)
-    df = df[df["check_delta"]==0]
-    #df.drop(cols+["check_delta"], axis=1, inplace=True)
-    
-    return df  
+    df["high_responses"] = df[response_cols].apply(lambda row: sum(row>1), axis=1)
+    df_bad = df[df["high_responses"]>1]
+    return df_bad
 
-#  CutOffOutliers_2 is slower than CutOffOutliers, CutOffOutliers remove NaN, but CutOffOutliers leaves NaN
 def CutOffOutliers(df, response_columns, middle_points_limit=-0.2):
     df = df.copy()
+    bad_index = []
     for j in range(1, len(response_columns)-1): # two first and two last are already assessed
-        df = df[(df[response_columns[j]] - df[response_columns[j+1]])>middle_points_limit]
-    return df  
+        bad_index.extend(df[(df[response_columns[j]] - df[response_columns[j+1]])<= middle_points_limit].index)
+    index_to_use = list(set(df.index) - set(bad_index))
+    return df.loc[index_to_use, :] 
 
+def FindAscendingData(df, response_columns, middle_points_limit=-0.2):
+    df = df.copy()
+    bad_index = []
+    for j in range(1, len(response_columns)-1): # two first and two last are already assessed
+        bad_index.extend(df[(df[response_columns[j]] - df[response_columns[j+1]])< middle_points_limit].index)
+        
+    index_to_use = list(set(bad_index))
+    return df.loc[index_to_use, :] 
         
 def FilteringSigmoidCurves(df, response_columns, filtering_scenario = [1,2,3], 
                      first_columns_to_compare = [1, 2], last_columns_to_compare = [-1, -2],
@@ -164,12 +167,40 @@ def FilteringSigmoidCurves(df, response_columns, filtering_scenario = [1,2,3],
                 print("3d stage filtration (Specified location of the plateus): Filtered dataset:", df.shape)
         
         elif i==4:
-            for j in range(1, len(response_columns)-2): # two first and two last are already assessed
-                df = df[(df[response_columns[j]] - df[response_columns[j+1]])>middle_points_limit]
+            df = CutOffOutliers(df, response_columns, middle_points_limit)
             
             print("4th stage filtration (Cut off high ancedent points): Filtered dataset:", df.shape)
             
         else:
             print("Unknown filtration scenario")
     
+    return df
+
+
+
+from sklearn.metrics import auc
+from scipy.stats import spearmanr
+from tqdm import tqdm
+
+def AucFitration(df, conc_columns, response_columns, auc_limit=0.7, save_file_name = None):
+    """
+    1. Remove all the curves where the normalised response value is greater than one at zero dosage. 
+    2. Compute the Area Under the Curve (AUC) for all the curves. 
+    3. Leave only those curves with an AUC>0.7.  
+    4. Compute the Spearman correlation coefficient between the normalised response and the scaled dosage 
+    (so the x-axis and the y-axis).
+    5. Further remove the curves for which the Spearman correlation coefficient is zero or positive.
+    """
+    
+    df = df[df["norm_cells_0"]<=1].copy()
+    
+    for index in tqdm(df.index):
+        row = df.loc[index, :]
+        df.loc[index, "auc"] = auc(row[conc_columns],row[response_columns])
+        df.loc[index, "spearman_r"] = spearmanr(row[conc_columns],row[response_columns])[0]
+    
+    if save_file_name:
+        df.to_csv(save_file_name, index=False)
+    
+    df = df[(df["auc"]>auc_limit) & (df["spearman_r"]<0)].copy()
     return df
