@@ -204,3 +204,12 @@ def AucFitration(df, conc_columns, response_columns, auc_limit=0.7, save_file_na
     
     df = df[(df["auc"]>auc_limit) & (df["spearman_r"]<0)].copy()
     return df
+
+def FilterGoodResponse(df, response_cols, final_response_limit=0.4):
+    df["count_missing"] = df[response_cols].isnull().sum(axis=1)
+    df["count_missing"].value_counts()
+    
+    ind_1 = list(df[(df["count_missing"]==4)& (df[response_cols[5]]<final_response_limit)].index)
+    ind_2 = list(df[(df["count_missing"]==0)& (df[response_cols[-1]]<final_response_limit)].index)
+    
+    return df.loc[ind_1+ind_2, :]
