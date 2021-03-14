@@ -117,7 +117,7 @@ def FilteringSigmoidCurves(df, response_columns, filtering_scenario = [1,2,3],
                      tolerance=0.05, 
                      first_points_lower_limit = 0.8, 
                      last_points_upper_limit = 0.4,
-                      middle_points_limit = 0.1):
+                      middle_points_limit = -0.2):
     """
     filtering_scenario = [1,2,3,4]
     1. Ensure that all the response are less than 1

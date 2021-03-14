@@ -176,6 +176,7 @@ def FittingColumn(df, indexes, x_columns, y_columns, fitting_function, parameter
                                                                parameters_guess = parameters_guess)
             except:
                 r2_scores[i] = 0
+    print(fitting_function_object)
     return r2_scores, fitting_parameters
 
 
@@ -312,3 +313,39 @@ def ShowOneFitting(df, ind, conc_columns, response_norm, fitting_function, fitti
     plt.legend()
     if save_fig_name:
         plt.savefig(save_fig_name, bbox_inches='tight', dpi=300);
+        
+def CompareFittingFunctions(df, functions, conc_columns, response_norm):
+    print(df.shape)
+    for fitting_function in functions:
+       # print(fitting_function)
+        r2, fit_param = FittingColumn(df, df.index, x_columns=conc_columns, y_columns= response_norm,
+                               fitting_function = fitting_function, default_param=True)
+        df[fitting_function+"_r2"] = r2
+        df[fitting_function] = fit_param
+
+    functions_dict= dict(list(enumerate(functions)))
+    r2_columns = [fitting_function+"_r2" for fitting_function in functions]
+
+    df["better_fitting"] = np.argmax(df[r2_columns].values, axis=1)
+    r2_col_res = r2_columns +["better_fitting"]
+    df["better_fitting"] = df["better_fitting"].map(functions_dict)
+    # df[r2_col_res].head()
+
+    print("")
+    best_functions = df["better_fitting"].unique()
+
+    df_best = pd.DataFrame(index= functions)
+    for fitting_function in functions:
+        r2_fit = df[fitting_function+"_r2"].values 
+        try:
+            df_best.loc[fitting_function, "best_fitting_count"] = df[df["better_fitting"]==fitting_function].shape[0]
+        except:
+             df_best.loc[fitting_function, "best_fitting_count"] = 0
+        df_best.loc[fitting_function, "min"] = min(r2_fit)
+        df_best.loc[fitting_function, "max"] = max(r2_fit)
+        df_best.loc[fitting_function, "r2>0"] = (r2_fit >0).sum().astype("int32")
+        df_best.loc[fitting_function, "r2>0.8"] = (r2_fit >0.8).sum().astype("int32")
+        df_best.loc[fitting_function, "r2>0.9"] = (r2_fit >0.9).sum().astype("int32")
+    display(df_best)
+    print("\nExamples of bad fitting with sigmoid_4_param (r2<0.61):", df[df["sigmoid_4_param_r2"]<0.61].shape[0])
+    display(df[df["sigmoid_4_param_r2"]<0.61][["COSMIC_ID", "DRUG_ID"]+r2_col_res].head())
