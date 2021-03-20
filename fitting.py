@@ -10,6 +10,13 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings("ignore")
 
+import os, sys
+
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
+os.environ["PYTHONWARNINGS"] = "ignore"
+
 
 def sigmoid_2_param(x, p, s):
     """ Sigmoid function from Dennis Wang's paper:
@@ -314,10 +321,10 @@ def ShowOneFitting(df, ind, conc_columns, response_norm, fitting_function, fitti
     if save_fig_name:
         plt.savefig(save_fig_name, bbox_inches='tight', dpi=300);
         
-def CompareFittingFunctions(df, functions, conc_columns, response_norm):
+def CompareFittingFunctions(df, functions, conc_columns, response_norm, save_file_name=None):
     print(df.shape)
     for fitting_function in functions:
-       # print(fitting_function)
+        print("\n", fitting_function)
         r2, fit_param = FittingColumn(df, df.index, x_columns=conc_columns, y_columns= response_norm,
                                fitting_function = fitting_function, default_param=True)
         df[fitting_function+"_r2"] = r2
@@ -331,7 +338,7 @@ def CompareFittingFunctions(df, functions, conc_columns, response_norm):
     df["better_fitting"] = df["better_fitting"].map(functions_dict)
     # df[r2_col_res].head()
 
-    print("")
+    print("\n")
     best_functions = df["better_fitting"].unique()
 
     df_best = pd.DataFrame(index= functions)
@@ -346,6 +353,10 @@ def CompareFittingFunctions(df, functions, conc_columns, response_norm):
         df_best.loc[fitting_function, "r2>0"] = (r2_fit >0).sum().astype("int32")
         df_best.loc[fitting_function, "r2>0.8"] = (r2_fit >0.8).sum().astype("int32")
         df_best.loc[fitting_function, "r2>0.9"] = (r2_fit >0.9).sum().astype("int32")
+        df_best.loc[fitting_function, "r2>0.99"] = (r2_fit >0.9).sum().astype("int32")
     display(df_best)
     print("\nExamples of bad fitting with sigmoid_4_param (r2<0.61):", df[df["sigmoid_4_param_r2"]<0.61].shape[0])
     display(df[df["sigmoid_4_param_r2"]<0.61][["COSMIC_ID", "DRUG_ID"]+r2_col_res].head())
+    if save_file_name:
+        df.to_csv(save_file_name, index=False)
+        
