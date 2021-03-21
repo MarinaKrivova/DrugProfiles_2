@@ -1,6 +1,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 def ShowResponseCurves(df, plots_in_row, plots_in_column, x_columns, y_columns, start_index=0, 
                        indexes=[], drug_dict = None, CCL_dict=None,
@@ -15,8 +16,8 @@ def ShowResponseCurves(df, plots_in_row, plots_in_column, x_columns, y_columns, 
         indexes =df.index[start_index : start_index+n_plots]
 
     for i, ind in list(enumerate(indexes)):
-        x = df.loc[ind, x_columns].values
-        y = df.loc[ind, y_columns].values
+        x = df.loc[ind, x_columns].values.astype(np.float32)
+        y = df.loc[ind, y_columns].values.astype(np.float32)
                 
         ax = fig.add_subplot(plots_in_row, plots_in_column, i+1)
         

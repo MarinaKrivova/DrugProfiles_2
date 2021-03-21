@@ -191,7 +191,7 @@ def ShowResponseCurvesWithFitting(df, plots_in_row, plots_in_column, x_columns, 
                          fitting_function =None, fitting_parameters = None, pred_fitting_param = None, drug_dict = None,
                                   CCL_dict=None):
     
-    print_general_title =False
+    print_general_title = False
     fig = plt.figure(figsize=(14, 11))
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
     n_plots= plots_in_row*plots_in_column
@@ -199,33 +199,29 @@ def ShowResponseCurvesWithFitting(df, plots_in_row, plots_in_column, x_columns, 
     if len(indexes) == 0:
         indexes = df.index[start_index : start_index+n_plots]
         
-    X = df.loc[indexes, x_columns].values.astype(np.float32)
-    Y = df.loc[indexes, y_columns].values.astype(np.float32)
+    for i, ind in list(enumerate(indexes)):
         
-    try:
-        for i in range(len(indexes)):
-            x = X[i, :]
-            y = Y[i, :]
-            ind = indexes[i]
+        x = df.loc[ind, x_columns].values.astype(np.float32)
+        y = df.loc[ind, y_columns].values.astype(np.float32)
 
                 
-            ax = fig.add_subplot(plots_in_row, plots_in_column, i+1)
-            ax.scatter(x,y)
-            if drug_dict and CCL_dict:
-                ax.set_title("Drug: "+ drug_dict[df.loc[ind, "DRUG_ID"]]+" / CCL: "+CCL_dict[df.loc[ind, "COSMIC_ID"]])
-            elif drug_dict:
-                ax.set_title("Drug: "+drug_dict[df.loc[ind, "DRUG_ID"]] +"_"+ str(df.loc[ind, "COSMIC_ID"]))
-            elif ("drug_name" in df.columns) and ("CCL_name" in df.columns):
-                ax.set_title("Drug: "+ str(df.loc[ind, "drug_name"])+" / CCL: "+ str(df.loc[ind, "CCL_name"]))
-            else:
-                print_general_title = True
-                ax.set_title(str(df.loc[ind, "DRUG_ID"])+"_"+str(df.loc[ind, "COSMIC_ID"]))
+        ax = fig.add_subplot(plots_in_row, plots_in_column, i+1)
+        ax.scatter(x,y)
+        if drug_dict and CCL_dict:
+            ax.set_title("Drug: "+ drug_dict[df.loc[ind, "DRUG_ID"]]+" / CCL: "+CCL_dict[df.loc[ind, "COSMIC_ID"]])
+        elif drug_dict:
+            ax.set_title("Drug: "+drug_dict[df.loc[ind, "DRUG_ID"]] +"_"+ str(df.loc[ind, "COSMIC_ID"]))
+        elif ("drug_name" in df.columns) and ("CCL_name" in df.columns):
+            ax.set_title("Drug: "+ str(df.loc[ind, "drug_name"])+" / CCL: "+ str(df.loc[ind, "CCL_name"]))
+        else:
+            print_general_title = True
+            ax.set_title(str(df.loc[ind, "DRUG_ID"])+"_"+str(df.loc[ind, "COSMIC_ID"]))
                     
-            ax.set_xlabel("Scaled dosage")
-            ax.set_ylabel("Normalised response")
-
-            if fitting_function:
-                functions = {"fsigmoid": fsigmoid, 
+        ax.set_xlabel("Scaled dosage")
+        ax.set_ylabel("Normalised response")
+        
+        if fitting_function:
+            functions = {"fsigmoid": fsigmoid, 
                              "sigmoid_2_param": sigmoid_2_param, 
                             "sigmoid_4_param": sigmoid_4_param,
                              "sigmoid_3_param": sigmoid_3_param, 
@@ -234,41 +230,38 @@ def ShowResponseCurvesWithFitting(df, plots_in_row, plots_in_column, x_columns, 
                              "ll4R_4_param":ll4R_4_param,
                              "logLogist_3_param":logLogist_3_param}
                 
-                fitting_function_object = functions[fitting_function]
+            fitting_function_object = functions[fitting_function]
+            
+            x2 = np.linspace(0, 1, 10)
+
+            if type(fitting_parameters) == str:
+                fit_param = df.loc[ind, fitting_parameters]
+                if len(fit_param) > 5:
+                    fit_param = [float(i) for i in fit_param.strip("[ ").strip(" ]").split()]
+            else:
+                fit_param = df.loc[ind, fitting_parameters].values
 
 
-                x2 = np.linspace(0, 1, 10)
-
-                if type(fitting_parameters) == str:
-                    fit_param = df.loc[ind, fitting_parameters]
-                else:
-
-                    fit_param = df.loc[ind, fitting_parameters].values
-
-                y_fit = fitting_function_object(x, *fit_param)
-                y2 = fitting_function_object(x2, *fit_param)
-                r2 = r2_score(y, y_fit)
-                ax.plot(x2, y2, label= "R^2 fit = %0.4f"% r2)
-                ax.legend()
+            y_fit = fitting_function_object(x, *fit_param)
+            y2 = fitting_function_object(x2, *fit_param)
+            
+            r2 = r2_score(y, y_fit)
+            ax.plot(x2, y2, label= "R^2 fit = %0.4f"% r2)
+            ax.legend()
                 
-            if pred_fitting_param:
+        if pred_fitting_param:
+            x3 = np.linspace(0, 1, 10) 
+            fit_param = df.loc[ind, pred_fitting_param]    
+            y_fit3 = fitting_function_object(x, *fit_param)
+            y3 = fitting_function_object(x3, *fit_param)
+            r2_pred = r2_score(y, y_fit3)
+            ax.plot(x3, y3, color="red", label= "R^2 pred = %0.4f"% r2_pred)
+            ax.legend()
 
-                x3 = np.linspace(0, 1, 10) 
-                fit_param = df.loc[ind, pred_fitting_param]    
-                y_fit3 = fitting_function_object(x, *fit_param)
-                y3 = fitting_function_object(x3, *fit_param)
-                r2_pred = r2_score(y, y_fit3)
-                ax.plot(x3, y3, color="red", label= "R^2 pred = %0.4f"% r2_pred)
-                ax.legend()
-
-                
-    except:
-        print("ERROR: Number of indexes does not correspond to number of graphs to plot")
         
     if print_general_title:
         print("Figures titles: Index_DRUG_ID_COSMIC_ID (COSMIC_ID is a cell line)")
-
-
+        
 def compute_r2_score(df, x_columns, y_columns, fitting_parameters, fitting_function="sigmoid_4_param"):
     functions = {"fsigmoid": fsigmoid, 
                  "sigmoid_2_param": sigmoid_2_param, 
@@ -359,4 +352,5 @@ def CompareFittingFunctions(df, functions, conc_columns, response_norm, save_fil
     display(df[df["sigmoid_4_param_r2"]<0.61][["COSMIC_ID", "DRUG_ID"]+r2_col_res].head())
     if save_file_name:
         df.to_csv(save_file_name, index=False)
+    return df
         
