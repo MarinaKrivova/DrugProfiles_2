@@ -314,14 +314,25 @@ def ShowOneFitting(df, ind, conc_columns, response_norm, fitting_function, fitti
     if save_fig_name:
         plt.savefig(save_fig_name, bbox_inches='tight', dpi=300);
         
-def CompareFittingFunctions(df, functions, conc_columns, response_norm, save_file_name=None):
-    print(df.shape)
-    for fitting_function in functions:
-        print("\n", fitting_function)
-        r2, fit_param = FittingColumn(df, df.index, x_columns=conc_columns, y_columns= response_norm,
+def ComputeFittingFunction(df, fitting_function, x_columns, y_columns):
+    shape_1 = df.shape[0]
+    r2, fit_param = FittingColumn(df, df.index, x_columns,y_columns,
                                fitting_function = fitting_function, default_param=True)
-        df[fitting_function+"_r2"] = r2
-        df[fitting_function] = fit_param
+    df[fitting_function+"_r2"] = r2
+    df[fitting_function] = fit_param
+    df = df[df[fitting_function].isnull()==False]
+    if df.shape[0]!= shape_1:
+        print("Reduced number of samples:", shape_1 - df.shape[0])
+    return df
+    
+        
+def CompareFittingFunctions(df, functions, conc_columns, response_norm, recompute_fitting= True, save_file_name=None):
+    print(df.shape)
+    if recompute_fitting:
+        for fitting_function in functions:
+            print("\n", fitting_function)
+            ComputeFittingFunction(df, fitting_function, conc_columns, response_norm)
+        
 
     functions_dict= dict(list(enumerate(functions)))
     r2_columns = [fitting_function+"_r2" for fitting_function in functions]

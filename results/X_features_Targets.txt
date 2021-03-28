@@ -1,0 +1,213 @@
+ATM
+ABL
+VEGFR
+MAP3K8
+Microtubule destabiliser
+MDM4
+AR
+BRAF
+Amyloid beta40
+GSK3A
+ALK5
+SHP-1 (PTPN6)
+IKKB
+CDK4
+p38
+IIa
+HDAC,RAR
+ALK4
+AURKC
+VEGFR2
+Biguanide agent
+NAE
+TIE2
+BCR-ABL
+BET
+PI3Kdelta
+TOP1
+PI3Kbeta
+CHEK1
+CHEK2
+PARP2
+Procaspase-7
+LCK
+CDK6
+ERK2
+AMPK agonist
+PARP1
+HDAC8
+CDK2
+FGFR1
+VEGFR3
+RAC2
+BRDT
+JNK3
+PI3K (Class 1)
+not defined
+SGK2
+DOT1L
+PKC
+HDAC6
+ROCK1
+BTK
+TEC
+SIRT1
+AURKB
+MET
+DNAPK
+DNA crosslinker
+TNKS1
+RAF
+MEK2
+Pyrimidine antimetabolite
+ROS1
+XIAP
+TAK1
+FAK
+PLK3
+IKK1
+FLT4
+Antimetabolite
+PKCB
+PYKFYVE
+RNA helicase A
+KIF11
+CDK1,CDK2,CDK5,CDK7,CDK9
+p38alpha
+RET
+Procaspase-3
+JAK1
+BCL-W
+LXR
+G9a and GLP methyltransferases
+PLK1
+RSK
+CSF1R
+Induces reactive oxygen species
+TIE2,AXL
+MAP4K2
+PDK1 (PDPK1)
+JAK2
+Antimetabolite (DNA & RNA)
+FLT3
+ERBB2
+ROCK2
+Endothelin-1 receptor (EDNRA)
+CLK4
+PDGFR
+RSK2
+HDAC inhibitor Class I
+AKT3
+IGF1R
+BIRC5
+SHP-2 (PTPN11)
+Retinioic X receptor (RXR) agonist
+PIM3
+Farnesyl-transferase (FNTA)
+HIPK2
+ PDGFRA
+BMX
+PIM1
+BCL2
+ARFGAP1
+c-FGR
+DDR1
+MEK1
+SRC
+IRAK1
+p38beta
+CAPN1
+IV
+BRD4
+AKT1
+HDAC1
+MCL1
+MEK5
+IIb
+CDK5
+dsDNA break induction
+DAPK3
+EPHB4
+MTORC1
+EIF2A
+PI3Kalpha
+SYK
+BRD2
+PPARdelta
+FLT1
+JNK2
+RAC3
+MTOR
+SERCA
+FYN
+CDK7
+BCL-XL
+Amyloid beta20
+IKK2
+PPK
+WEE1
+MTORC2
+NAMPT
+PAK1
+EGFR
+PPM1D
+FAK2
+FXR
+PPARgamma
+PLK2
+HIF-PH
+L3MBTL3
+SMO
+JNK1
+CDK9
+Dihydrofolate reductase (DHFR)
+SGK3
+TOP2
+MAPK7
+HSP90
+PI3Kgamma
+EGLN1
+ROCK
+ERK5
+TBK1
+DNA alkylating agent
+BRD3
+FGFR3
+HDAC1-10
+IR
+Autophagy inducer
+PDGFRA
+MPS1
+Proteasome
+MDM2
+TNKS2
+others
+Anthracycline
+NTRK1
+Ephrins
+GSK3B
+JNK
+NTRK3
+JAK3
+ALK
+KSP
+CDK1
+Microtubule stabiliser
+AKT2
+VEGFR1
+NTRK2
+ITK
+ESR1
+AURKA
+ERK1
+PI3K (class 1)
+CRBN
+Retinoic acid
+RNA Polymerase 1
+RAC1
+PDGFRB
+S6K1
+KIT
+IKK
+gamma-secretase
+HDAC3
