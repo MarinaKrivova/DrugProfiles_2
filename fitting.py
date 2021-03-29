@@ -364,4 +364,32 @@ def CompareFittingFunctions(df, functions, conc_columns, response_norm, recomput
     if save_file_name:
         df.to_csv(save_file_name, index=False)
     return df
+
+def ReconstructSVR_all_drugs(test, X_columns, fitting_function, conc_columns, response_columns,
+                             n_coef = 4, recompute_predictions = False,
+                             model_dict=None, scaler_dict=None, training_details=None):
+    
+    if recompute_predictions:
+        pred_cols = []
+        for i in n_coef:
+            X_test = scaler_dict[i].transform(test[X_columns])
+            col_name = "pred_param_"+str(i)
+            test[col_name] = model_dict[i].predict(X_test)
+            pred_cols.append(col_name)
+    
+    pred_cols = []
+    for i in range(len(conc_columns)):
+        col_name = "pred_"+response_columns[i]
+        if n_coef==4:
+            test[col_name] = fitting_function(test[pred_cols[0]],test[pred_cols[0]],test[pred_cols[1]],test[pred_cols[2]], test[pred_cols[3]])
+        else:
+            test[col_name] = fitting_function(test[pred_cols[0]],test[pred_cols[0]])
+        test["dif_"+str(i)] = test[response_columns[i]] - test["pred_"+response_columns[i]] 
+        pred_cols.append(col_name) 
+    
+    for i in range(len(test.index)):
+        y = test.loc[i,response_columns].values
+        y_fit_pred = test.loc[i, pred_cols].values
+        test.loc[i, "r2_score_pred"] = r2_score(y, y_fit_pred)
         
+    return test
