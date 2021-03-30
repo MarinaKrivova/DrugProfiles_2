@@ -262,7 +262,9 @@ def ShowResponseCurvesWithFitting(df, plots_in_row, plots_in_column, x_columns, 
     if print_general_title:
         print("Figures titles: Index_DRUG_ID_COSMIC_ID (COSMIC_ID is a cell line)")
         
-def compute_r2_score(df, x_columns, y_columns, fitting_parameters, fitting_function="sigmoid_4_param"):
+    
+def compute_r2_score(df, x_columns, y_columns, fitting_parameters, fitting_function="sigmoid_4_param",
+                    return_fit_y=False):
     functions = {"fsigmoid": fsigmoid, 
                  "sigmoid_2_param": sigmoid_2_param, 
                 "sigmoid_4_param": sigmoid_4_param,
@@ -274,16 +276,26 @@ def compute_r2_score(df, x_columns, y_columns, fitting_parameters, fitting_funct
     
     fitting_function_object = functions[fitting_function]
     r2_scores=np.zeros(len(df.index))
+    y_computed = np.zeros(len(df.index))
     for i in range(len(df.index)):
-        x = df.loc[df.index[i], x_columns]
-        y = df.loc[df.index[i], y_columns]
+        x = df.loc[df.index[i], x_columns].astype("float32").values
+        y = df.loc[df.index[i], y_columns].astype("float32").values
         if type(fitting_parameters) == str:
             fit_param = df.loc[df.index[i], fitting_parameters]
+            
         else:
             fit_param = df.loc[df.index[i], fitting_parameters].values
+            
         y_fit = fitting_function_object(x, *fit_param)
         r2_scores[i] = r2_score(y, y_fit)
-    return r2_scores
+        df.loc[df.index[i], "pred_fit_r2"] = r2_score(y, y_fit)
+        if return_fit_y:
+            for y in range(len(y_fit)):
+                df.loc[df.index[i], "pred_y_"+str(y)] = y_fit[y]
+    if return_fit_y:
+        return df
+    else:
+        return r2_scores
 
 def ShowOneFitting(df, ind, conc_columns, response_norm, fitting_function, fitting_parameters,
                    predicted_param=None, save_fig_name=None, fig_size=None):
@@ -364,32 +376,3 @@ def CompareFittingFunctions(df, functions, conc_columns, response_norm, recomput
     if save_file_name:
         df.to_csv(save_file_name, index=False)
     return df
-
-def ReconstructSVR_all_drugs(test, X_columns, fitting_function, conc_columns, response_columns,
-                             n_coef = 4, recompute_predictions = False,
-                             model_dict=None, scaler_dict=None, training_details=None):
-    
-    if recompute_predictions:
-        pred_cols = []
-        for i in n_coef:
-            X_test = scaler_dict[i].transform(test[X_columns])
-            col_name = "pred_param_"+str(i)
-            test[col_name] = model_dict[i].predict(X_test)
-            pred_cols.append(col_name)
-    
-    pred_cols = []
-    for i in range(len(conc_columns)):
-        col_name = "pred_"+response_columns[i]
-        if n_coef==4:
-            test[col_name] = fitting_function(test[pred_cols[0]],test[pred_cols[0]],test[pred_cols[1]],test[pred_cols[2]], test[pred_cols[3]])
-        else:
-            test[col_name] = fitting_function(test[pred_cols[0]],test[pred_cols[0]])
-        test["dif_"+str(i)] = test[response_columns[i]] - test["pred_"+response_columns[i]] 
-        pred_cols.append(col_name) 
-    
-    for i in range(len(test.index)):
-        y = test.loc[i,response_columns].values
-        y_fit_pred = test.loc[i, pred_cols].values
-        test.loc[i, "r2_score_pred"] = r2_score(y, y_fit_pred)
-        
-    return test
